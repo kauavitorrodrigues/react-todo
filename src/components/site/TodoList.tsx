@@ -1,29 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { TodoItem } from "./TodoItem"
-import { Todo } from "@/types/Todo"
 import { Input } from "@/components/ui/input";
+import * as api from "@/api/server"
+import { useTodos } from "@/contexts/TodosContext";
 
 export const TodoList = () => {
 
-    const [ todoList, setTodoList ] = useState<Todo[]>([   
-        { label: "Gravar vídeo", completed: true },
-        { label: "Treinar", completed: false }
-    ])
+    const { todos, fetchTodos } = useTodos()
+    const [ inputValue, setInputValue ] = useState("")
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") handleAddTodo(inputValue)
     }
 
-    const [ inputValue, setInputValue ] = useState("")
-
-    const handleAddTodo = (label: string) => {
-        if (!label.trim()) return
-        const newTodo: Todo = { label, completed: false }
-        const newTodoList = [ ...todoList, newTodo ]
-        setTodoList(newTodoList)
+    const handleAddTodo = async (title: string) => {
+        if (!title.trim()) return
+        await api.createTask(title)
         setInputValue('')
+        fetchTodos()
     }
 
     return (
@@ -41,7 +37,7 @@ export const TodoList = () => {
                 onKeyDown={handleKeyDown}
             />
 
-            { todoList.map( (todo, index) => (
+            { todos.map( (todo, index) => (
                 <TodoItem todo={todo} key={index}/>
             ))}
 
